@@ -53,9 +53,9 @@ public class TxHandler {
 				internalUtxoPool.removeUTXO(MyUTXO);
 			}
 		}
-		//Add all the transactions in the dynamic ArrayList to a static Array
+		//Add all the transactions in the dynamic ArrayList to a static Array so that it can be returned.
 		Transaction[] ValidTransactionArray = ValidTxList.toArray(new Transaction[0]);
 		
-		return ValidTransactionArray[] ;
+		return ValidTransactionArray;
 	}
 } 
