@@ -9,16 +9,10 @@ public class TxHandler {
 	public TxHandler(UTXOPool utxoPool) 
 	{
 		//Create a (defensive deep) copy of the utxoPool object.
-		UTXOPool PoolCopy = new UTXOPool(utxoPool);
-		
-		//Create an ArrayList of all the UTXOs in the pool.
-		ArrayList<UTXO> PoolArray = PoolCopy.getAllUTXO();
-		//System.out.println("Pool Array in TxHandler:"+PoolArray);
+		UTXOPool MyPool = new UTXOPool(utxoPool);
 
-		//Send the ArrayList to handleTxs Method.
-		handleTxs(PoolArray);
-		
 	}
+	UTXOPool internalUtxoPool = new UTXOPool(); //creates an internal UTXO pool for handleTxs function.
 
 	/* Returns true if 
 	 * (1) all outputs claimed by tx are in the current UTXO pool, 
@@ -28,8 +22,7 @@ public class TxHandler {
 	 * (5) the sum of tx’s input values is greater than or equal to the sum of   
 	        its output values;
 	   and false otherwise.
-	 */
-
+	*/
 	public boolean isValidTx(Transaction tx) {
 		// IMPLEMENT THIS
 		return false;
@@ -42,8 +35,27 @@ public class TxHandler {
 	 */
 	public Transaction[] handleTxs(Transaction[] possibleTxs) {
 
-		// IMPLEMENT THIS
-		return null;
-	}
+		ArrayList<Transaction> ValidTxList = new ArrayList<>();
+		for (int i=0; i<possibleTxs.length; i++)
+		{
+			Transaction myTx = possibleTxs[i];
+			UTXO MyUTXO = new UTXO(myTx.getHash(), i);
+			if (isValidTx(myTx))
+			{
+				//if the transaction is valid, add it to the ArrayList.
+				ValidTxList.add(myTx);
+				internalUtxoPool.addUTXO(MyUTXO, myTx.getOutput(i));
 
+			}
+			else if (!isValidTx(myTx))
+			{
+				//Transaction is invalid, remove it from the UTXO pool.
+				internalUtxoPool.removeUTXO(MyUTXO);
+			}
+		}
+		//Add all the transactions in the dynamic ArrayList to a static Array
+		Transaction[] ValidTransactionArray = ValidTxList.toArray(new Transaction[0]);
+		
+		return ValidTransactionArray[] ;
+	}
 } 
