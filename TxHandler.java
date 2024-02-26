@@ -1,3 +1,4 @@
+import java.security.PublicKey;
 import java.util.ArrayList;
 
 public class TxHandler {
@@ -6,6 +7,8 @@ public class TxHandler {
 	 * transaction outputs) is utxoPool. This should make a defensive copy of 
 	 * utxoPool by using the UTXOPool(UTXOPool uPool) constructor.
 	 */
+	private UTXOPool MyPool;
+
 	public TxHandler(UTXOPool utxoPool) 
 	{
 		//Create a (defensive deep) copy of the utxoPool object.
@@ -25,7 +28,45 @@ public class TxHandler {
 	*/
 	public boolean isValidTx(Transaction tx) {
 		// IMPLEMENT THIS
-		return false;
+	    double totalInput = 0;
+		double totalOutput = 0;
+		ArrayList<UTXO> utxosSeen = new ArrayList<>();
+
+		for (int i = 0; i < tx.numInputs(); i++) {
+			Transaction.Input in = tx.getInput(i);
+			UTXO utxo = new UTXO(in.prevTxHash, in.outputIndex);
+			Transaction.Output output = MyPool.getTxOutput(utxo);
+			byte[] signature = in.signature;
+			byte[] message = tx.getRawDataToSign(i);
+
+			if (!MyPool.contains(utxo)) {
+				return false;
+			}
+
+			if (!Crypto.verifySignature((PublicKey) output.address, message, signature)) {
+				return false;
+			}
+
+			if (utxosSeen.contains(utxo)) {
+				return false;
+			}
+
+			utxosSeen.add(utxo);
+			totalInput += output.value;
+		}
+
+		for (Transaction.Output out : tx.getOutputs()) {
+			if (out.value < 0) {
+				return false;
+			}
+			totalOutput += out.value;
+		}
+
+		if (totalInput < totalOutput) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/* Handles each epoch by receiving an unordered array of proposed 
